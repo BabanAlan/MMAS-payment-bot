@@ -6,12 +6,16 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.methods import forward_message
 from aiogram import Bot, Dispatcher
 
-from keyboards import *
+from config import config
+from handlers.keyboards import *
+from handlers.phrases import payment_phrases
+from handlers.buttons import buttons
 
 router = Router()
-bot = Bot('6454073989:AAEUfJqGTPX2I3oEUMrpQyKq2KnCqzEpVSo')
+bot = Bot(config['bot_token'])
 
 
+# Состояния диалога в сценарии отправки чека
 class PaymentSending(StatesGroup):
     sending_photo = State()
     sending_name = State()
@@ -19,10 +23,10 @@ class PaymentSending(StatesGroup):
 
 
 # Инициация сценария отправки чека
-@router.message(F.text.lower() == "➕пиркрепить чек")
+@router.message(F.text == buttons['add_payment'])
 async def cmd_payment(message: Message, state: FSMContext):
     await message.answer(
-        text="Пришлите, пожалуйста, фото чека:",
+        text=payment_phrases['payment_img'],
         reply_markup=payment_keyboard()
     )
     await state.set_state(PaymentSending.sending_photo)
@@ -33,7 +37,7 @@ async def cmd_payment(message: Message, state: FSMContext):
 async def photo_sent(message: Message, state: FSMContext):
     await state.update_data(sent_photo=message)
     await message.answer(
-        text="Спасибо. Теперь, пожалуйста, напишите ФИО занимающегося (за кого оплата):",
+        text=payment_phrases['payment_name'],
         reply_markup=payment_keyboard()
     )
     await state.set_state(PaymentSending.sending_name)
@@ -43,8 +47,7 @@ async def photo_sent(message: Message, state: FSMContext):
 @router.message(PaymentSending.sending_photo)
 async def photo_sent_incorrectly(message: Message):
     await message.answer(
-        text="Формат сообщения не подходит.\n\n"
-             "Пожалуйста, пришлите ФОТО:",
+        text=payment_phrases['payment_img_incorrect'],
         reply_markup=payment_keyboard()
     )
 
@@ -54,7 +57,7 @@ async def photo_sent_incorrectly(message: Message):
 async def name_sent(message: Message, state: FSMContext):
     await state.update_data(sent_name=message.text)
     await message.answer(
-        text="Спасибо. Теперь, пожалуйста, введите дату занятия (оплаченной тренировки):",
+        text=payment_phrases['payment_date'],
         reply_markup=payment_keyboard()
     )
     await state.set_state(PaymentSending.sending_date)
@@ -64,8 +67,7 @@ async def name_sent(message: Message, state: FSMContext):
 @router.message(PaymentSending.sending_name)
 async def name_sent_incorrectly(message: Message):
     await message.answer(
-        text="Имя введено неверно.\n"
-             "Пожалуйста, напишите ФИО:",
+        text=payment_phrases['payment_name_incorrect'],
         reply_markup=payment_keyboard()
     )
 
@@ -74,20 +76,23 @@ async def name_sent_incorrectly(message: Message):
 @router.message(PaymentSending.sending_date, F.text != None)
 async def name_sent(message: Message, state: FSMContext):
     user_data = await state.get_data()
+    # Пересылка сообщения с картинкой(чтобы был виден отправитель)
     await bot.forward_message(
-        chat_id="-4594099956",
+        chat_id=config['admins_chat_id'],
         from_chat_id=message.chat.id,
         message_id=user_data['sent_photo'].message_id
     )
+    # Сборка остальной информации в одно сообщение и отправка
     await bot.send_message(
-        chat_id="-4594099956",
+        chat_id=config['admins_chat_id'],
         text=f"{user_data['sent_name']}\n{message.text}"
     )
-    
+    # Отправка завершающего сценарий сообщения
     await message.answer(
-        text="Большое спасбо!",
+        text=payment_phrases['payment_finish'],
         reply_markup=base_keyboard()
     )
+    # Сброс state
     await state.clear()
 
 
@@ -95,7 +100,6 @@ async def name_sent(message: Message, state: FSMContext):
 @router.message(PaymentSending.sending_date)
 async def name_sent_incorrectly(message: Message):
     await message.answer(
-        text="Дата введена неверно.\n"
-             "Пожалуйста, пришлите дату:",
+        text=payment_phrases['payment_date_incorrect'],
         reply_markup=payment_keyboard()
     )
