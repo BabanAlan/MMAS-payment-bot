@@ -1,18 +1,17 @@
-from aiogram import Router, F
+from aiogram import Bot, Router, F
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
 from aiogram.methods import forward_message
-from aiogram import Bot, Dispatcher
 
-from bot import bot
 from config import config
 from handlers.keyboards import *
 from handlers.phrases import payment_phrases
 from handlers.buttons import buttons
 
 router = Router()
+bot = Bot(config['bot_token'])
 
 
 # Состояния диалога в сценарии отправки чека
