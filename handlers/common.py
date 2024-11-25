@@ -1,16 +1,17 @@
-from aiogram import F, Router
+from aiogram import Bot, Router, F
 from aiogram.filters import Command
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message, CallbackQuery
 
+from config import config
 from handlers.keyboards import *
 from handlers.phrases import common_phrases
 from handlers.buttons import buttons
-from bot import bot
 
 router = Router()
+bot = Bot(config['bot_token'])
 
 # Начальное сообщение
 @router.message(Command(commands=["start"]))
