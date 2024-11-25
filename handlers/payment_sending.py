@@ -6,13 +6,13 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.methods import forward_message
 from aiogram import Bot, Dispatcher
 
+from bot import bot
 from config import config
 from handlers.keyboards import *
 from handlers.phrases import payment_phrases
 from handlers.buttons import buttons
 
 router = Router()
-bot = Bot(config['bot_token'])
 
 
 # Состояния диалога в сценарии отправки чека
