@@ -102,6 +102,6 @@ async def name_sent(call: CallbackQuery, state: FSMContext):
 @router.message(PaymentSending.sending_studio)
 async def name_sent_incorrectly(message: Message):
     await message.answer(
-        text=payment_phrases['payment_studio_incorrect'],
-        reply_markup=payment_keyboard()
+        text=payment_phrases['payment_studio'],
+        reply_markup=studios_keyboard()
     )
