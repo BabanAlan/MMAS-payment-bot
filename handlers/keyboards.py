@@ -1,5 +1,8 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from handlers.buttons import buttons
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton 
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+from handlers.buttons import buttons, types
 
 def make_row_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
     row = [KeyboardButton(text=item) for item in items]
@@ -14,3 +17,26 @@ def base_keyboard():
 def payment_keyboard():
     keyboard = make_row_keyboard([buttons['back']])
     return keyboard
+
+
+def types_keyboard():
+    builder = InlineKeyboardBuilder()
+    # Создание кнопок со типами оплаты
+    for i in range(len(types)):
+        builder.row(
+            InlineKeyboardButton(
+                text=types[i],
+                callback_data=f"tps_{i+1}{types[i]}"
+            )
+        )
+
+    # Создание кнопки "назад"
+    builder.row(
+        InlineKeyboardButton(
+            text=buttons['back'],
+            callback_data=buttons['back']
+        )
+    )
+
+    builder.adjust(2)
+    return builder.as_markup()
